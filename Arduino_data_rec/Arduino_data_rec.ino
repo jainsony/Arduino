@@ -1,5 +1,5 @@
 #include <Servo.h>
-#define datalen 4
+#define datalen 6
 #define threshold 10
 // Servo myservo;
 // Servo myservo1;

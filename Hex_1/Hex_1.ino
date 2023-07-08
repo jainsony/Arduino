@@ -29,8 +29,11 @@ void setup()
   j3.attach(11);
 
   j1.write(leg_1_theta_J1_off);
+  delay(10);
   j2.write(leg_1_theta_J2_off);
+  delay(10);
   j3.write(leg_1_theta_J3_off);
+  delay(10);
 
   delay(1000);
 }

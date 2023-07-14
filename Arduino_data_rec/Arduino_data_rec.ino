@@ -38,13 +38,6 @@ void setup() {
   pinMode(ledPin, OUTPUT);
   pinMode(reac, OUTPUT);
   pinMode(igni, OUTPUT);
-  // myservo.attach(9);
-  // myservo1.attach(10);
-  // myservo2.attach(11);
-  // pinMode(buttonPin, INPUT);
-  // myservo.write(10); 
-  // myservo1.write(90); 
-  // myservo2.write(90); 
 }
 
 void loop() {

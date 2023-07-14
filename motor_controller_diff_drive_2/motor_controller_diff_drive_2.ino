@@ -53,6 +53,7 @@ long currentMillis = 0;
 // Motor A connections
 const int enA = 9;
 const int in1 = 5;
+const int dir1 = 5;
 const int in2 = 6;
   
 // Motor B connections
@@ -291,12 +292,14 @@ void set_pwm_values() {
  
   // Set the direction of the motors
   if (pwmLeftReq > 0) { // Left wheel forward
-    digitalWrite(in1, HIGH);
-    digitalWrite(in2, LOW);
+    // digitalWrite(in1, HIGH);
+    // digitalWrite(in2, LOW);
+    digitalWrite(dir1, LOW);
   }
   else if (pwmLeftReq < 0) { // Left wheel reverse
-    digitalWrite(in1, LOW);
-    digitalWrite(in2, HIGH);
+    // digitalWrite(in1, LOW);
+    // digitalWrite(in2, HIGH);
+    digitalWrite(dir1, HIGH);
   }
   else if (pwmLeftReq == 0 && pwmLeftOut == 0 ) { // Left wheel stop
     digitalWrite(in1, LOW);
@@ -381,12 +384,14 @@ void setup() {
   pinMode(enA, OUTPUT);
   pinMode(enB, OUTPUT);
   pinMode(in1, OUTPUT);
+  pinMode(dir1, OUTPUT);
   pinMode(in2, OUTPUT);
   pinMode(in3, OUTPUT);
   pinMode(in4, OUTPUT);
   
   // Turn off motors - Initial state
   digitalWrite(in1, LOW);
+  digitalWrite(dir1, LOW);
   digitalWrite(in2, LOW);
   digitalWrite(in3, LOW);
   digitalWrite(in4, LOW);

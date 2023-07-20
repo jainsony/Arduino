@@ -52,7 +52,7 @@ long currentMillis = 0;
  
 // Motor A connections
 const int enA = 9;
-const int in1 = 5;
+const int in1 = -1;
 const int dir1 = 5;
 const int in2 = 6;
   
@@ -65,21 +65,21 @@ const int in4 = 8;
 const int PWM_INCREMENT = 1;
  
 // Number of ticks per wheel revolution. We won't use this in this code.
-const int TICKS_PER_REVOLUTION = 620;
+const int TICKS_PER_REVOLUTION = 188; // 3v -> 188 || 5v -> 58
  
 // Wheel radius in meters
 const double WHEEL_RADIUS = 0.033;
  
 // Distance from center of the left tire to the center of the right tire in m
-const double WHEEL_BASE = 0.17;
+const double WHEEL_BASE = 0.2;
  
 // Number of ticks a wheel makes moving a linear distance of 1 meter
 // This value was measured manually.
-const double TICKS_PER_METER = 3100; // Originally 2880
+const double TICKS_PER_METER = 840; // // 3v -> 840 || 5v -> 270
  
 // Proportional constant, which was measured by measuring the 
 // PWM-Linear Velocity relationship for the robot.
-const int K_P = 278;
+const int K_P = 100;
  
 // Y-intercept for the PWM-Linear Velocity relationship for the robot
 const int b = 52;
@@ -88,10 +88,10 @@ const int b = 52;
 const int DRIFT_MULTIPLIER = 120;
  
 // Turning PWM output (0 = min, 255 = max for PWM values)
-const int PWM_TURN = 80;
+const int PWM_TURN = 40;
  
 // Set maximum and minimum limits for the PWM values
-const int PWM_MIN = 80; // about 0.1 m/s
+const int PWM_MIN = 30; // about 0.1 m/s
 const int PWM_MAX = 100; // about 0.172 m/s
  
 // Set linear velocity and PWM variable values for each wheel

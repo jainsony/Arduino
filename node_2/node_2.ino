@@ -28,19 +28,15 @@ boolean connectWifi();
 void firstLightChanged(uint8_t brightness);
 void secondLightChanged(uint8_t brightness);
 void thirdLightChanged(uint8_t brightness);
-// void fourthLightChanged(uint8_t brightness);
-// void fifthLightChanged(uint8_t brightness);
 
 // WiFi Credentials
-const char* ssid = "DOOM123";
-const char* password = "laptoptowifi@";
+const char* ssid = "WoUniversity Mgmt";
+const char* password = "Woxsen#$2020";
 
 // device names
-String Device_1_Name = "Room light";
-String Device_2_Name = "Blue bulb";
-String Device_3_Name = "Yellow bulb";
-// String Device_4_Name = "Red bulb";
-// String Device_5_Name = "CFL bulb";
+String Device_1_Name = "Phone charger";
+String Device_2_Name = "laptop charger";
+String Device_3_Name = "light";
 
 boolean wifiConnected = false;
 
@@ -53,8 +49,6 @@ void setup()
   pinMode(RelayPin1, OUTPUT);
   pinMode(RelayPin2, OUTPUT);
   pinMode(RelayPin3, OUTPUT);
-  pinMode(RelayPin4, OUTPUT);
-  pinMode(RelayPin5, OUTPUT);
 
   // Initialise wifi connection
   wifiConnected = connectWifi();
@@ -65,8 +59,6 @@ void setup()
     espalexa.addDevice(Device_1_Name, firstLightChanged); //simplest definition, default state off
     espalexa.addDevice(Device_2_Name, secondLightChanged);
     espalexa.addDevice(Device_3_Name, thirdLightChanged);
-    // espalexa.addDevice(Device_4_Name, fourthLightChanged);
-    // espalexa.addDevice(Device_5_Name, fifthLightChanged);
 
     espalexa.begin();
   }
@@ -93,13 +85,15 @@ void firstLightChanged(uint8_t brightness)
   if (brightness == 255)
     {
       digitalWrite(RelayPin1, HIGH);
-      Serial.println("Device1 ON");
+      Serial.print(Device_1_Name);
+      Serial.println(" ON");
     }
   else
   {
     digitalWrite(RelayPin1, LOW);
-    Serial.println("Device1 OFF");
-  }
+      Serial.print(Device_1_Name);
+      Serial.println(" OFF");  
+      }
 }
 
 void secondLightChanged(uint8_t brightness)
@@ -108,13 +102,15 @@ void secondLightChanged(uint8_t brightness)
   if (brightness == 255)
     {
       digitalWrite(RelayPin2, HIGH);
-      Serial.println("Device2 ON");
-    }
+      Serial.print(Device_2_Name);
+      Serial.println(" ON");    
+      }
   else
   {
     digitalWrite(RelayPin2, LOW);
-    Serial.println("Device2 OFF");
-  }
+      Serial.print(Device_2_Name);
+      Serial.println(" OFF");  
+      }
 }
 
 void thirdLightChanged(uint8_t brightness)
@@ -123,44 +119,16 @@ void thirdLightChanged(uint8_t brightness)
   if (brightness == 255)
     {
       digitalWrite(RelayPin3, HIGH);
-      Serial.println("Device3 ON");
-    }
+      Serial.print(Device_3_Name);
+      Serial.println(" ON");    
+      }
   else
   {
     digitalWrite(RelayPin3, LOW);
-    Serial.println("Device3 OFF");
-  }
+      Serial.print(Device_3_Name);
+      Serial.println(" OFF");  
+      }
 }
-
-// void fourthLightChanged(uint8_t brightness)
-// {
-//   //Control the device 
-//   if (brightness == 255)
-//     {
-//       digitalWrite(RelayPin4, HIGH);
-//       Serial.println("Device4 ON");
-//     }
-//   else
-//   {
-//     digitalWrite(RelayPin4, LOW);
-//     Serial.println("Device4 OFF");
-//   }
-// }
-
-// void fifthLightChanged(uint8_t brightness)
-// {
-//   //Control the device 
-//   if (brightness == 255)
-//     {
-//       digitalWrite(RelayPin5, HIGH);
-//       Serial.println("Device5 ON");
-//     }
-//   else
-//   {
-//     digitalWrite(RelayPin5, LOW);
-//     Serial.println("Device5 OFF");
-//   }
-// }
 
 // connect to wifi – returns true if successful or false if not
 boolean connectWifi()

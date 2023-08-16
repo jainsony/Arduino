@@ -18,8 +18,8 @@
 #define RelayPin1 5  //D1
 #define RelayPin2 4  //D2
 #define RelayPin3 13 //D7  
-#define RelayPin4 14 //D5
-#define RelayPin5 12 //D6
+// #define RelayPin4 14 //D5
+// #define RelayPin5 12 //D6
 
 // prototypes
 boolean connectWifi();
@@ -32,15 +32,12 @@ void fourthLightChanged(uint8_t brightness);
 void fifthLightChanged(uint8_t brightness);
 
 // WiFi Credentials
-const char* ssid = "DOOM123";
-const char* password = "laptoptowifi@";
+const char* ssid = "WoUniversity Mgmt";
+const char* password = "Woxsen#$2020";
 
 // device names
-// String Device_1_Name = "Room light";
-// String Device_2_Name = "Blue bulb";
-// String Device_3_Name = "Yellow bulb";
-String Device_4_Name = "Red bulb";
-String Device_5_Name = "CFL bulb";
+String Device_1_Name = "Red bulb";
+String Device_2_Name = "CFL bulb";
 
 boolean wifiConnected = false;
 
@@ -53,8 +50,8 @@ void setup()
   pinMode(RelayPin1, OUTPUT);
   pinMode(RelayPin2, OUTPUT);
   pinMode(RelayPin3, OUTPUT);
-  pinMode(RelayPin4, OUTPUT);
-  pinMode(RelayPin5, OUTPUT);
+  // pinMode(RelayPin4, OUTPUT);
+  // pinMode(RelayPin5, OUTPUT);
 
   // Initialise wifi connection
   wifiConnected = connectWifi();
@@ -65,8 +62,8 @@ void setup()
     // espalexa.addDevice(Device_1_Name, firstLightChanged); //simplest definition, default state off
     // espalexa.addDevice(Device_2_Name, secondLightChanged);
     // espalexa.addDevice(Device_3_Name, thirdLightChanged);
-    espalexa.addDevice(Device_4_Name, fourthLightChanged);
-    espalexa.addDevice(Device_5_Name, fifthLightChanged);
+    espalexa.addDevice(Device_1_Name, fourthLightChanged);
+    espalexa.addDevice(Device_2_Name, fifthLightChanged);
 
     espalexa.begin();
   }

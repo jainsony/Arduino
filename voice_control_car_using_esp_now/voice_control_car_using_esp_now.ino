@@ -17,7 +17,7 @@
 #include <DHT.h>
 
 // REPLACE WITH THE MAC Address of your receiver 
-uint8_t broadcastAddress[] = {0xA4, 0xCF, 0x12, 0xF3, 0x84, 0x5D};
+uint8_t broadcastAddress[] = {0xA4, 0xCF, 0x12, 0xF3, 0x81, 0xEF};
 
 uint8_t debug_mode = 1;
 // Digital pin connected to the DHT sensor
@@ -166,11 +166,15 @@ void loop() {
 
     //Get DHT readings
     getReadings();
-
     //Set values to send
     Data_structure.speed = Speed;
     Data_structure.dir = Direction;
 
+    control(Speed, Direction); //##
+    if(debug_mode == 1)//##check this  line later
+      delay(2000);
+    Speed = 0;
+    Direction = 0;
     // Send message via ESP-NOW
     esp_now_send(broadcastAddress, (uint8_t *) &Data_structure, sizeof(Data_structure));
 
@@ -188,50 +192,51 @@ void loop() {
 //////////////////////////////////////////////
 
 // work on "Speed" and Direction "vaiable"
-void control()
+// void control(int Speed, int Direction)
+void control(int Speed, int Direction)
 {
-  if(dataArray[0] > threshold)
+  if(Speed > threshold)
   {
-    a_speed = dataArray[0];
+    a_speed = Speed;
     analogWrite(speed_pin, a_speed);
     digitalWrite(dir_pin, LOW);
     // analogWrite(PWM2, a_speed);
     // digitalWrite(DIR2, LOW);
   }
-  else if(dataArray[0] < -threshold)
+  else if(Speed < -threshold)
   {
-    a_speed = -1*dataArray[0];
+    a_speed = -1*Speed;
     analogWrite(speed_pin, a_speed);
     digitalWrite(dir_pin, HIGH);
     // analogWrite(PWM2, a_speed);
     // digitalWrite(DIR2, HIGH);
   }
-  else if(dataArray[1] > threshold)
-  {
-    a_speed = dataArray[1];
-    analogWrite(speed_pin, a_speed);
-    digitalWrite(dir_pin, LOW);
-    // analogWrite(PWM2, a_speed);
-    // digitalWrite(DIR2, HIGH);
+  // else if(dataArray[1] > threshold)
+  // {
+  //   a_speed = dataArray[1];
+  //   analogWrite(speed_pin, a_speed);
+  //   digitalWrite(dir_pin, LOW);
+  //   // analogWrite(PWM2, a_speed);
+  //   // digitalWrite(DIR2, HIGH);
 
-  }
-  else if(dataArray[1] < -threshold)
-  {
-    a_speed = -1*dataArray[1];
-    analogWrite(speed_pin, a_speed);
-    digitalWrite(dir_pin, HIGH);
-    // analogWrite(PWM2, a_speed);
-    // digitalWrite(DIR2, LOW);
+  // }
+  // else if(dataArray[1] < -threshold)
+  // {
+  //   a_speed = -1*dataArray[1];
+  //   analogWrite(speed_pin, a_speed);
+  //   digitalWrite(dir_pin, HIGH);
+  //   // analogWrite(PWM2, a_speed);
+  //   // digitalWrite(DIR2, LOW);
     
-  }
+  // }
   else
   {
     analogWrite(speed_pin, LOW);
     // analogWrite(PWM2, LOW);
     analogWrite(dir_pin, LOW);
     // analogWrite(DIR2, LOW);
-    dataArray[0]=0;
-    dataArray[1]=0;
+    Speed=0;
+    Direction=0;
     // dataArray[2]
     // dataArray[3]
   }

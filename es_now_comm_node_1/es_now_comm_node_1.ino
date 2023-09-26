@@ -10,16 +10,27 @@
   copies or substantial portions of the Software.
 */
 
+// Send serial data
+
 #include <ESP8266WiFi.h>
 #include <espnow.h>
 
 // REPLACE WITH THE MAC Address of your receiver 
-uint8_t broadcastAddress[] = {0xA4, 0xCF, 0x12, 0xF3, 0x81, 0xEF};
+uint8_t broadcastAddress[] = {0xA4, 0xCF, 0x12, 0xF3, 0x84, 0x5D};
 
 uint8_t debug_mode = 1;
 // Digital pin connected to the DHT sensor
 #define speed_pin 5    // D1
 #define dir_pin 4      // D2
+
+#define datalen 4
+#define threshold 5
+
+int i = 0;
+
+int a_speed = 0;
+int b_speed = 0;
+
 // Uncomment the type of sensor in use:
 //#define DHTTYPE    DHT11     // DHT 11
 // #define DHTTYPE    DHT22     // DHT 22 (AM2302)
@@ -31,12 +42,16 @@ uint8_t debug_mode = 1;
 float Speed;
 float Direction;
 
+String dataString = ""; // variable to hold input data
+int dataArray[datalen]; // array to hold parsed integers
+int dataIndex = 0; // index for dataArray
+
 // Define variables to store incoming readings
-float incomingTemp;
-float incomingHum;
+float FeedBackSpeed;
+float FeedBackDirection;
 
 // Updates DHT readings every 10 seconds
-const long interval = 10000; 
+const long interval = 1000; 
 unsigned long previousMillis = 0;    // will store last time DHT was updated 
 
 // Variable to store if sending data was successful
@@ -74,12 +89,12 @@ void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len) {
     Serial.print("Bytes received: ");
     Serial.println(len);
   }
-  incomingTemp = incomingReadings.speed;
-  incomingHum = incomingReadings.dir;
+  FeedBackSpeed = incomingReadings.speed;
+  FeedBackDirection = incomingReadings.dir;
 }
 
 // ##edit this function
-void getReadings(){
+void getReadings(){ // To get data from another esp
   // Read Speed
 
   Speed = 50; // ##replace this from speed 
@@ -101,19 +116,20 @@ void getReadings(){
 
 void printIncomingReadings(){
   // Display Readings in Serial Monitor
-  Serial.println("INCOMING READINGS");
+  Serial.println("FEEDBACK READINGS");
   Serial.print("Speed: ");
-  Serial.print(incomingTemp);
+  Serial.print(FeedBackSpeed);
   Serial.println(" units");
   Serial.print("Direction: ");
-  Serial.print(incomingHum);
+  Serial.print(FeedBackDirection);
   Serial.println(" sign");
 }
  
 void setup() {
   // Init Serial Monitor
   Serial.begin(115200);
-
+  pinMode(speed_pin, OUTPUT);
+  pinMode(dir_pin, OUTPUT);
   // Init DHT sensor
   // dht.begin();
  
@@ -126,6 +142,7 @@ void setup() {
     Serial.println("Error initializing ESP-NOW");
     return;
   }
+
 
   // Set ESP-NOW Role
   esp_now_set_self_role(ESP_NOW_ROLE_COMBO);
@@ -140,25 +157,134 @@ void setup() {
   // Register for a callback function that will be called when data is received
   esp_now_register_recv_cb(OnDataRecv);
 }
- 
+
+void get_serial_reading()
+{
+  if (Serial.available()) { // check if there is incoming data
+    char incomingChar = Serial.read(); // read incoming character
+    // Serial.print(incomingChar);
+    if (incomingChar == '<') { // start of data
+      dataString = ""; // clear input data
+      dataIndex = 0; // reset index for dataArray
+    } else if (incomingChar == '>') { // end of data
+      parseData(); // call function to parse input data
+      // printData();  // call function to print parsed data
+      // control();
+    } else { // data character
+      dataString += incomingChar; // add to input data
+    }
+}
+}
+
+
 void loop() {
   unsigned long currentMillis = millis();
-  if (currentMillis - previousMillis >= interval) {
-    // save the last time you updated the DHT values
-    previousMillis = currentMillis;
+  get_serial_reading();
+  if (currentMillis - previousMillis >= interval) 
+    {
+      // save the last time you updated the DHT values
+      previousMillis = currentMillis;
 
-    //Get DHT readings
-    getReadings();
+      //Get DHT readings
+      // getReadings();
+      get_serial_reading();
 
-    //Set values to send
-    Data_structure.speed = Speed;
-    Data_structure.dir = Direction;
+      //Set values to send
+      Data_structure.speed = dataArray[0];
+      Data_structure.dir = dataArray[1];
 
-    // Send message via ESP-NOW
-    esp_now_send(broadcastAddress, (uint8_t *) &Data_structure, sizeof(Data_structure));
+      // Send message via ESP-NOW
+      esp_now_send(broadcastAddress, (uint8_t *) &Data_structure, sizeof(Data_structure));
 
-    // Print incoming readings
-    if(debug_mode == 1)
-      printIncomingReadings();
+      // Print incoming readings
+      if(debug_mode == 1)
+      {
+        Serial.println("------------------------ Debug Mode ----------------------");
+        Serial.println("------------------------ FeedBack Data ----------------------");
+        printIncomingReadings();
+        Serial.println("------------------------ Paresed Data ----------------------");
+        printData();
+        Serial.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+      }
+    }
+
+}
+
+
+  //////////////////////////////////////////////////////////////////////
+
+void parseData() {
+  int commaIndex = 0; // index for locating commas in input string
+  while (dataIndex < datalen) { // parse up to 4 integers
+    commaIndex = dataString.indexOf(","); // find next comma in input string
+    if (commaIndex == -1) { 
+      commaIndex = dataString.length();
+    }
+    dataArray[dataIndex] = dataString.substring(0, commaIndex).toInt(); // convert substring to integer and store in array
+    dataString = dataString.substring(commaIndex + 1); // remove parsed substring and comma from input string
+    dataIndex++; // move to next index in array
   }
 }
+
+void printData() {
+  Serial.print("Parsed data: ");
+  for (i = 0; i < datalen; i++) {
+    Serial.print(dataArray[i]);
+    Serial.print(" ");
+  }
+  Serial.println();
+}
+
+void control()
+{
+  if(dataArray[0] > threshold)
+  {
+    a_speed = dataArray[0];
+    analogWrite(speed_pin, a_speed);
+    digitalWrite(dir_pin, LOW);
+    // analogWrite(PWM2, a_speed);
+    // digitalWrite(DIR2, LOW);
+  }
+  else if(dataArray[0] < -threshold)
+  {
+    a_speed = -1*dataArray[0];
+    analogWrite(speed_pin, a_speed);
+    digitalWrite(dir_pin, HIGH);
+    // analogWrite(PWM2, a_speed);
+    // digitalWrite(DIR2, HIGH);
+  }
+  else if(dataArray[1] > threshold)
+  {
+    a_speed = dataArray[1];
+    analogWrite(speed_pin, a_speed);
+    digitalWrite(dir_pin, LOW);
+    // analogWrite(PWM2, a_speed);
+    // digitalWrite(DIR2, HIGH);
+
+  }
+  else if(dataArray[1] < -threshold)
+  {
+    a_speed = -1*dataArray[1];
+    analogWrite(speed_pin, a_speed);
+    digitalWrite(dir_pin, HIGH);
+    // analogWrite(PWM2, a_speed);
+    // digitalWrite(DIR2, LOW);
+    
+  }
+  else
+  {
+    analogWrite(speed_pin, LOW);
+    // analogWrite(PWM2, LOW);
+    analogWrite(dir_pin, LOW);
+    // analogWrite(DIR2, LOW);
+    dataArray[0]=0;
+    dataArray[1]=0;
+    // dataArray[2]
+    // dataArray[3]
+  }
+
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+

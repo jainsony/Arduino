@@ -12,12 +12,12 @@
 #include <WiFi.h>
 #else
 #include <ESP8266WiFi.h>
-#endif
+#endifhots
 #include <Espalexa.h>
 // define the GPIO connected with Relays
-#define RelayPin1 0  //D3
-#define RelayPin2 15
-#define RelayPin3 5  // D1
+#define RelayPin1 0  //D3 phone charger checked
+#define RelayPin2 14 //D5 laptop charger checked
+#define RelayPin3 5  // D1 checked light
 // BuiltInCheck using gpio 13 D7
 // #define RelayPin4 5 //D1
 // #define RelayPin5 12 //D6
@@ -35,7 +35,7 @@ void BuiltInCheckfun(uint8_t brightness);
 // const char* ssid = "WoUniversity Mgmt";
 // const char* password = "Woxsen#$2020";
 
-const char* ssid = "DOOM1234";
+const char* ssid = "DOOM123";
 const char* password = "laptoptowifi@";
 
 // device names

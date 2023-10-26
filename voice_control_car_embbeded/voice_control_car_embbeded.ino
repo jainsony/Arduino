@@ -79,7 +79,7 @@ void printData() {
   Serial.println();
 }
 
-void control()
+void control() 
 {
   if(dataArray[0] > threshold)
   {

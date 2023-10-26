@@ -24,6 +24,7 @@ uint8_t debug_mode = 1;
 #define speed_pin 5    // D1
 #define dir_pin 4      // D2
 
+
 #define datalen 4
 #define threshold 5
 
@@ -52,7 +53,7 @@ int dataArray[datalen]; // array to hold parsed integers
 int dataIndex = 0; // index for dataArray
 
 // Updates DHT readings every 10 seconds
-const long interval = 1000; 
+const long interval = 100; 
 unsigned long previousMillis = 0;    // will store last time DHT was updated 
 
 // Variable to store if sending data was successful
@@ -137,7 +138,8 @@ void setup() {
   // Set device as a Wi-Fi Station
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
-
+  
+  Serial.println("I am Rec_controller : {0xA4, 0xCF, 0x12, 0xF3, 0x81, 0xEF}");
   // Init ESP-NOW
   if (esp_now_init() != 0) {
     Serial.println("Error initializing ESP-NOW");
@@ -180,6 +182,7 @@ void loop() {
         Serial.println("------------------------ Debug Mode ----------------------");
         Serial.println("------------------------ Incoming Data ----------------------");
         printIncomingReadings();
+        control();
         Serial.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
       }
   }
@@ -190,27 +193,33 @@ void loop() {
 // work on "Speed" and Direction "vaiable"
 void control()
 {
-  if(dataArray[0] > threshold)
+  // Serial.print("in control function Speed = ");
+  // Serial.println(Speed);
+  Serial.print("in control function direction = ");
+  Serial.println(Direction);
+
+  if(Speed > threshold)
   {
-    a_speed = dataArray[0];
+    a_speed = int(Speed);
     analogWrite(speed_pin, a_speed);
     digitalWrite(dir_pin, LOW);
     // analogWrite(PWM2, a_speed);
     // digitalWrite(DIR2, LOW);
   }
-  else if(dataArray[0] < -threshold)
+  else if(Speed < -threshold)
   {
-    a_speed = -1*dataArray[0];
+    a_speed = int(-1*Speed);
     analogWrite(speed_pin, a_speed);
     digitalWrite(dir_pin, HIGH);
     // analogWrite(PWM2, a_speed);
     // digitalWrite(DIR2, HIGH);
   }
-  else if(dataArray[1] > threshold)
+  else if(Direction > threshold)
   {
-    a_speed = dataArray[1];
+    b_speed = int(Direction);
     analogWrite(speed_pin, a_speed);
     digitalWrite(dir_pin, LOW);
+    delay(500)
     // analogWrite(PWM2, a_speed);
     // digitalWrite(DIR2, HIGH);
 
@@ -232,6 +241,8 @@ void control()
     // analogWrite(DIR2, LOW);
     dataArray[0]=0;
     dataArray[1]=0;
+    a_speed = 0;
+    b_speed = 0;
     // dataArray[2]
     // dataArray[3]
   }

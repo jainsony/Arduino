@@ -20,8 +20,10 @@ uint8_t broadcastAddress[] = {0xA4, 0xCF, 0x12, 0xF3, 0x84, 0x5D};
 
 uint8_t debug_mode = 1;
 // Digital pin connected to the DHT sensor
-#define speed_pin 5    // D1
-#define dir_pin 4      // D2
+
+
+
+#define buttonPin 5   // D4 digital
 
 #define datalen 4
 #define threshold 5
@@ -51,7 +53,7 @@ float FeedBackSpeed;
 float FeedBackDirection;
 
 // Updates DHT readings every 10 seconds
-const long interval = 1000; 
+const long interval = 100; 
 unsigned long previousMillis = 0;    // will store last time DHT was updated 
 
 // Variable to store if sending data was successful
@@ -128,15 +130,15 @@ void printIncomingReadings(){
 void setup() {
   // Init Serial Monitor
   Serial.begin(115200);
-  pinMode(speed_pin, OUTPUT);
-  pinMode(dir_pin, OUTPUT);
+
   // Init DHT sensor
   // dht.begin();
+  Serial.println("I am Rec_controller : {0xA4, 0xCF, 0x12, 0xF3, 0x81, 0xEF}");
  
   // Set device as a Wi-Fi Station
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
-
+  pinMode(buttonPin, OUTPUT);
   // Init ESP-NOW
   if (esp_now_init() != 0) {
     Serial.println("Error initializing ESP-NOW");
@@ -193,6 +195,17 @@ void loop() {
       Data_structure.speed = dataArray[0];
       Data_structure.dir = dataArray[1];
 
+      if(dataArray[1] > 0)
+      {
+        digitalWrite(buttonPin, HIGHw);
+        delay(50);
+      }
+      else
+      {
+        digitalWrite(buttonPin, LOW);
+        delay(50);
+      }
+
       // Send message via ESP-NOW
       esp_now_send(broadcastAddress, (uint8_t *) &Data_structure, sizeof(Data_structure));
 
@@ -235,55 +248,6 @@ void printData() {
   Serial.println();
 }
 
-void control()
-{
-  if(dataArray[0] > threshold)
-  {
-    a_speed = dataArray[0];
-    analogWrite(speed_pin, a_speed);
-    digitalWrite(dir_pin, LOW);
-    // analogWrite(PWM2, a_speed);
-    // digitalWrite(DIR2, LOW);
-  }
-  else if(dataArray[0] < -threshold)
-  {
-    a_speed = -1*dataArray[0];
-    analogWrite(speed_pin, a_speed);
-    digitalWrite(dir_pin, HIGH);
-    // analogWrite(PWM2, a_speed);
-    // digitalWrite(DIR2, HIGH);
-  }
-  else if(dataArray[1] > threshold)
-  {
-    a_speed = dataArray[1];
-    analogWrite(speed_pin, a_speed);
-    digitalWrite(dir_pin, LOW);
-    // analogWrite(PWM2, a_speed);
-    // digitalWrite(DIR2, HIGH);
-
-  }
-  else if(dataArray[1] < -threshold)
-  {
-    a_speed = -1*dataArray[1];
-    analogWrite(speed_pin, a_speed);
-    digitalWrite(dir_pin, HIGH);
-    // analogWrite(PWM2, a_speed);
-    // digitalWrite(DIR2, LOW);
-    
-  }
-  else
-  {
-    analogWrite(speed_pin, LOW);
-    // analogWrite(PWM2, LOW);
-    analogWrite(dir_pin, LOW);
-    // analogWrite(DIR2, LOW);
-    dataArray[0]=0;
-    dataArray[1]=0;
-    // dataArray[2]
-    // dataArray[3]
-  }
-
-}
 
 ///////////////////////////////////////////////////////////////////////////
 

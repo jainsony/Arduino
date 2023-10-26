@@ -24,7 +24,8 @@ uint8_t debug_mode = 1;
 #define speed_pin 5    // D1
 #define dir_pin 4      // D2
 
-
+// #define speed_pin  14   // D5 analogus
+// #define dir_pin 2      // D4 digital
 
 #define datalen 4
 #define threshold 5
@@ -153,7 +154,7 @@ void setup() {
   // get the status of Trasnmitted packet
   esp_now_register_send_cb(OnDataSent);
   
-  // Register peer
+  // Register peerc:\Users\ENIGMA\Documents\Arduino\node_1\node_1.ino
   esp_now_add_peer(broadcastAddress, ESP_NOW_ROLE_COMBO, 1, NULL, 0);
   
   // Register for a callback function that will be called when data is received
@@ -247,3 +248,52 @@ void control(int Speed, int Direction)
 
 ////////////////////////////////////////////
 
+// void control()
+// {
+//   if(dataArray[0] > threshold)
+//   {
+//     a_speed = dataArray[0];
+//     analogWrite(PWM1, a_speed);
+//     digitalWrite(DIR1, LOW);
+//     analogWrite(PWM2, a_speed);
+//     digitalWrite(DIR2, LOW);
+//   }
+//   else if(dataArray[0] < -threshold)
+//   {
+//     a_speed = -1*dataArray[0];
+//     analogWrite(PWM1, a_speed);
+//     digitalWrite(DIR1, HIGH);
+//     analogWrite(PWM2, a_speed);
+//     digitalWrite(DIR2, HIGH);
+//   }
+//   else if(dataArray[1] > threshold)
+//   {
+//     a_speed = dataArray[1];
+//     analogWrite(PWM1, a_speed);
+//     digitalWrite(DIR1, LOW);
+//     analogWrite(PWM2, a_speed);
+//     digitalWrite(DIR2, HIGH);
+
+//   }
+//   else if(dataArray[1] < -threshold)
+//   {
+//     a_speed = -1*dataArray[1];
+//     analogWrite(PWM1, a_speed);// 
+//     digitalWrite(DIR1, HIGH);
+//     analogWrite(PWM2, a_speed);
+//     digitalWrite(DIR2, LOW);
+    
+//   }
+//   else
+//   {
+//     analogWrite(PWM1, LOW);
+//     analogWrite(PWM2, LOW);
+//     analogWrite(DIR1, LOW);
+//     analogWrite(DIR2, LOW);
+//     dataArray[0]=0;
+//     dataArray[1]=0;
+//     // dataArray[2]
+//     // dataArray[3]
+//   }
+
+// }

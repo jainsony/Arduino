@@ -1,4 +1,4 @@
-// uint8_t broadcastAddress[] = {0xA4, 0xCF, 0x12, 0xF3, 0x84, 0x5D}; 
+// uint8_t broadcastAddress[] = {MAC: ec:fa:bc:5f:90:52};
 /*
   Rui Santos
   Complete project details at https://RandomNerdTutorials.com/esp-now-two-way-communication-esp8266-nodemcu/
@@ -10,20 +10,20 @@
   copies or substantial portions of the Software.
 */
 
+// Send serial data
+
 #include <ESP8266WiFi.h>
 #include <espnow.h>
-
-#include <Adafruit_Sensor.h>
-#include <DHT.h>
 
 // REPLACE WITH THE MAC Address of your receiver 
 uint8_t broadcastAddress[] = {0xA4, 0xCF, 0x12, 0xF3, 0x84, 0x5D};
 
 uint8_t debug_mode = 1;
 // Digital pin connected to the DHT sensor
-#define speed_pin 5    // D1
-#define dir_pin 4      // D2
 
+
+
+#define buttonPin 5   // D4 digital
 
 #define datalen 4
 #define threshold 5
@@ -44,13 +44,13 @@ int b_speed = 0;
 float Speed;
 float Direction;
 
-// Define variables to store incoming readings
-float incomingSpeed;
-float incomingDir;
-
 String dataString = ""; // variable to hold input data
 int dataArray[datalen]; // array to hold parsed integers
 int dataIndex = 0; // index for dataArray
+
+// Define variables to store incoming readings
+float FeedBackSpeed;
+float FeedBackDirection;
 
 // Updates DHT readings every 10 seconds
 const long interval = 100; 
@@ -74,57 +74,56 @@ struct_message incomingReadings;
 
 // Callback when data is sent
 void OnDataSent(uint8_t *mac_addr, uint8_t sendStatus) {
-  if(debug_mode == 1)
-    Serial.print("Last Packet Send Status: ");
+  Serial.print("Last Packet Send Status: ");
   if (sendStatus == 0){
-    if(debug_mode == 1)
-      Serial.println("Delivery success");
+    Serial.println("Delivery success");
   }
   else{
-    if(debug_mode == 1)
-      Serial.println("Delivery fail");
+    Serial.println("Delivery fail");
   }
 }
 
 // Callback when data is received
 void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len) {
   memcpy(&incomingReadings, incomingData, sizeof(incomingReadings));
-  if(debug_mode == 1)
+  if (debug_mode == 1)
   {
     Serial.print("Bytes received: ");
     Serial.println(len);
   }
-
-  incomingSpeed = incomingReadings.speed;
-  incomingDir = incomingReadings.dir;
+  FeedBackSpeed = incomingReadings.speed;
+  FeedBackDirection = incomingReadings.dir;
 }
 
 // ##edit this function
-void getReadings(){
-  // reciving data
-  Speed = incomingSpeed; // ##replace this from speed 
+void getReadings(){ // To get data from another esp
+  // Read Speed
+
+  Speed = 50; // ##replace this from speed 
+
   // Read Speed as Fahrenheit (isFahrenheit = true)
   //float t = dht.readTemperature(true);
   if (isnan(Speed)){
-    Serial.println("Failed to read");
+    Serial.println("Failed to read from DHT");
     Speed = 0.0;
   }
-  // reciving data
-  Direction = incomingDir;  // ##replace this from direction
+
+  Direction = 1;  // ##replace this from direction
+
   if (isnan(Direction)){
-    Serial.println("Failed to read");
+    Serial.println("Failed to read from DHT");
     Direction = 0.0;
   }
 }
 
 void printIncomingReadings(){
   // Display Readings in Serial Monitor
-  Serial.println("INCOMING READINGS");
+  Serial.println("FEEDBACK READINGS");
   Serial.print("Speed: ");
-  Serial.print(incomingSpeed);
+  Serial.print(FeedBackSpeed);
   Serial.println(" units");
   Serial.print("Direction: ");
-  Serial.print(incomingDir);
+  Serial.print(FeedBackDirection);
   Serial.println(" sign");
 }
  
@@ -134,17 +133,18 @@ void setup() {
 
   // Init DHT sensor
   // dht.begin();
+  Serial.println("I am Rec_controller : MAC: ec:fa:bc:5f:90:52");
  
   // Set device as a Wi-Fi Station
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
-  
-  Serial.println("{0xA4, 0xCF, 0x12, 0xF3, 0x84, 0x5D}");
+  pinMode(buttonPin, OUTPUT);
   // Init ESP-NOW
   if (esp_now_init() != 0) {
     Serial.println("Error initializing ESP-NOW");
     return;
   }
+
 
   // Set ESP-NOW Role
   esp_now_set_self_role(ESP_NOW_ROLE_COMBO);
@@ -159,94 +159,86 @@ void setup() {
   // Register for a callback function that will be called when data is received
   esp_now_register_recv_cb(OnDataRecv);
 }
- 
+
+void get_serial_reading()
+{
+  if (Serial.available()) { // check if there is incoming data
+    char incomingChar = Serial.read(); // read incoming character
+    // Serial.print(incomingChar);
+    if (incomingChar == '<') { // start of data
+      dataString = ""; // clear input data
+      dataIndex = 0; // reset index for dataArray
+    } else if (incomingChar == '>') { // end of data
+      parseData(); // call function to parse input data
+      // printData();  // call function to print parsed data
+      // control();
+    } else { // data character
+      dataString += incomingChar; // add to input data
+    }
+}
+}
+
+
 void loop() {
   unsigned long currentMillis = millis();
-  if (currentMillis - previousMillis >= interval) {
-    // save the last time you updated the DHT values
-    previousMillis = currentMillis;
+  get_serial_reading();
+  if (currentMillis - previousMillis >= interval) 
+    {
+      // save the last time you updated the DHT values
+      previousMillis = currentMillis;
 
-    //Get DHT readings
-    getReadings();
+      //Get DHT readings
+      // getReadings();
+      get_serial_reading();
 
-    //Set values to send
-    Data_structure.speed = Speed;
-    Data_structure.dir = Direction;
+      //Set values to send
+      Data_structure.speed = dataArray[0];
+      Data_structure.dir = dataArray[1];
 
-    // Send message via ESP-NOW
-    esp_now_send(broadcastAddress, (uint8_t *) &Data_structure, sizeof(Data_structure));
 
-    // Print incoming readings
-          if(debug_mode == 1)
+      // Send message via ESP-NOW
+      esp_now_send(broadcastAddress, (uint8_t *) &Data_structure, sizeof(Data_structure));
+
+      // Print incoming readings
+      if(debug_mode == 1)
       {
         Serial.println("------------------------ Debug Mode ----------------------");
-        Serial.println("------------------------ Incoming Data ----------------------");
+        Serial.println("------------------------ FeedBack Data ----------------------");
         printIncomingReadings();
-        control();
+        Serial.println("------------------------ Paresed Data ----------------------");
+        printData();
         Serial.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
       }
-  }
-}
-
-//////////////////////////////////////////////
-
-// work on "Speed" and Direction "vaiable"
-void control()
-{
-  // Serial.print("in control function Speed = ");
-  // Serial.println(Speed);
-  Serial.print("in control function direction = ");
-  Serial.println(Direction);
-
-  if(Speed > threshold)
-  {
-    a_speed = int(Speed);
-    analogWrite(speed_pin, a_speed);
-    digitalWrite(dir_pin, LOW);
-    // analogWrite(PWM2, a_speed);
-    // digitalWrite(DIR2, LOW);
-  }
-  else if(Speed < -threshold)
-  {
-    a_speed = int(-1*Speed);
-    analogWrite(speed_pin, a_speed);
-    digitalWrite(dir_pin, HIGH);
-    // analogWrite(PWM2, a_speed);
-    // digitalWrite(DIR2, HIGH);
-  }
-  else if(Direction > threshold)
-  {
-    b_speed = int(Direction);
-    analogWrite(speed_pin, a_speed);
-    digitalWrite(dir_pin, LOW);
-    // analogWrite(PWM2, a_speed);
-    // digitalWrite(DIR2, HIGH);
-
-  }
-  else if(dataArray[1] < -threshold)
-  {
-    a_speed = -1*dataArray[1];
-    analogWrite(speed_pin, a_speed);
-    digitalWrite(dir_pin, HIGH);
-    // analogWrite(PWM2, a_speed);
-    // digitalWrite(DIR2, LOW);
-    
-  }
-  else
-  {
-    analogWrite(speed_pin, LOW);
-    // analogWrite(PWM2, LOW);
-    analogWrite(dir_pin, LOW);
-    // analogWrite(DIR2, LOW);
-    dataArray[0]=0;
-    dataArray[1]=0;
-    a_speed = 0;
-    b_speed = 0;
-    // dataArray[2]
-    // dataArray[3]
-  }
+    }
 
 }
 
-////////////////////////////////////////////
+
+  //////////////////////////////////////////////////////////////////////
+
+void parseData() {
+  int commaIndex = 0; // index for locating commas in input string
+  while (dataIndex < datalen) { // parse up to 4 integers
+    commaIndex = dataString.indexOf(","); // find next comma in input string
+    if (commaIndex == -1) { 
+      commaIndex = dataString.length();
+    }
+    dataArray[dataIndex] = dataString.substring(0, commaIndex).toInt(); // convert substring to integer and store in array
+    dataString = dataString.substring(commaIndex + 1); // remove parsed substring and comma from input string
+    dataIndex++; // move to next index in array
+  }
+}
+
+void printData() {
+  Serial.print("Parsed data: ");
+  for (i = 0; i < datalen; i++) {
+    Serial.print(dataArray[i]);
+    Serial.print(" ");
+  }
+  Serial.println();
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+
 

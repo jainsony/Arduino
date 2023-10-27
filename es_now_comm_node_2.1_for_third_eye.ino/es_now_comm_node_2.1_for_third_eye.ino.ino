@@ -21,9 +21,11 @@ uint8_t broadcastAddress[] = {0xA4, 0xCF, 0x12, 0xF3, 0x84, 0x5D};
 
 uint8_t debug_mode = 1;
 // Digital pin connected to the DHT sensor
-#define speed_pin 5    // D1
-#define dir_pin 4      // D2
+#define PWM1 5    // D1  these are working
+#define DIR1 4      // D2
 
+#define PWM2 0    // D3 these are working
+#define DIR2 2      // D4
 
 #define datalen 4
 #define threshold 5
@@ -132,8 +134,10 @@ void setup() {
   // Init Serial Monitor
   Serial.begin(115200);
 
-  // Init DHT sensor
-  // dht.begin();
+  pinMode(PWM1, OUTPUT);
+  pinMode(DIR1, OUTPUT);
+  pinMode(PWM2, OUTPUT);
+  pinMode(DIR2, OUTPUT);
  
   // Set device as a Wi-Fi Station
   WiFi.mode(WIFI_STA);
@@ -193,60 +197,54 @@ void loop() {
 // work on "Speed" and Direction "vaiable"
 void control()
 {
-  // Serial.print("in control function Speed = ");
-  // Serial.println(Speed);
-  Serial.print("in control function direction = ");
-  Serial.println(Direction);
-
   if(Speed > threshold)
   {
-    a_speed = int(Speed);
-    analogWrite(speed_pin, a_speed);
-    digitalWrite(dir_pin, LOW);
-    // analogWrite(PWM2, a_speed);
-    // digitalWrite(DIR2, LOW);
+    a_speed = Speed;
+    analogWrite(PWM1, a_speed);
+    digitalWrite(DIR1, LOW);
+    analogWrite(PWM2, a_speed);
+    digitalWrite(DIR2, LOW);
   }
   else if(Speed < -threshold)
   {
-    a_speed = int(-1*Speed);
-    analogWrite(speed_pin, a_speed);
-    digitalWrite(dir_pin, HIGH);
-    // analogWrite(PWM2, a_speed);
-    // digitalWrite(DIR2, HIGH);
+    a_speed = -1*Speed;
+    analogWrite(PWM1, a_speed);
+    digitalWrite(DIR1, HIGH);
+    analogWrite(PWM2, a_speed);
+    digitalWrite(DIR2, HIGH);
   }
   else if(Direction > threshold)
   {
-    b_speed = int(Direction);
-    analogWrite(speed_pin, a_speed);
-    digitalWrite(dir_pin, LOW);
-    // analogWrite(PWM2, a_speed);
-    // digitalWrite(DIR2, HIGH);
+    b_speed = Direction;
+    analogWrite(PWM1, b_speed);
+    digitalWrite(DIR1, LOW);
+    analogWrite(PWM2, b_speed);
+    digitalWrite(DIR2, HIGH);
 
   }
-  else if(dataArray[1] < -threshold)
+  else if(Direction < -threshold)
   {
-    a_speed = -1*dataArray[1];
-    analogWrite(speed_pin, a_speed);
-    digitalWrite(dir_pin, HIGH);
-    // analogWrite(PWM2, a_speed);
-    // digitalWrite(DIR2, LOW);
+    b_speed = -1*Direction;
+    analogWrite(PWM1, b_speed);
+    digitalWrite(DIR1, HIGH);
+    analogWrite(PWM2, b_speed);
+    digitalWrite(DIR2, LOW);
     
   }
   else
   {
-    analogWrite(speed_pin, LOW);
-    // analogWrite(PWM2, LOW);
-    analogWrite(dir_pin, LOW);
-    // analogWrite(DIR2, LOW);
-    dataArray[0]=0;
-    dataArray[1]=0;
-    a_speed = 0;
-    b_speed = 0;
+    analogWrite(PWM1, LOW);
+    analogWrite(PWM2, LOW);
+    analogWrite(DIR1, LOW);
+    analogWrite(DIR2, LOW);
+    Speed=0;
+    Direction=0;
     // dataArray[2]
     // dataArray[3]
   }
 
 }
+
 
 ////////////////////////////////////////////
 

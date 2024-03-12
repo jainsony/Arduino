@@ -1,6 +1,6 @@
 #include <FastLED.h>
 
-#define LED_PIN     7
+#define LED_PIN     0
 #define NUM_LEDS    60
 #define violet      (143,0,255)
 #define cyan        (0,255,255)

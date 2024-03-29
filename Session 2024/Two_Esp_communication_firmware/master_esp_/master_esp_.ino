@@ -1,29 +1,15 @@
-// uint8_t broadcastAddress[] = {0x8C, 0xAA, 0xB5, 0x52, 0xA2, 0xFB}; brodd
-/*
-  Rui Santos
-  Complete project details at https://RandomNerdTutorials.com/esp-now-two-way-communication-esp8266-nodemcu/
-  
-  Permission is hereby granted, free of charge, to any person obtaining a copy
-  of this software and associated documentation files.
-  
-  The above copyright notice and this permission notice shall be included in all
-  copies or substantial portions of the Software.
-*/
+// {0x8C, 0xAA, 0xB5, 0x52, 0xA2, 0xFB}; brodd
+// a esp01 : a4:cf:12:ff:a6:d5
+// b esp01 : 5c:cf:7f:49:c6:50
+// {0xA4, 0xCF, 0x12, 0xBE, 0x6A, 0x7D};  brodd bro
 
 // Send serial data
-
 #include <ESP8266WiFi.h>
 #include <espnow.h>
 
-// REPLACE WITH THE MAC Address of your receiver 
-uint8_t broadcastAddress[] = {0xA4, 0xCF, 0x12, 0xBE, 0x6A, 0x7D};
-
-uint8_t debug_mode = 1;
-// Digital pin connected to the DHT sensor
-
-
-
-#define buttonPin 5   // D4 digital
+// MAC Address of your salve 
+uint8_t broadcastAddress[] = {0x5C, 0xCF, 0x7F, 0x49, 0xC6, 0x50};
+uint8_t debug_mode = 0;
 
 #define datalen 4
 #define threshold 5
@@ -33,14 +19,6 @@ int i = 0;
 int a_speed = 0;
 int b_speed = 0;
 
-// Uncomment the type of sensor in use:
-//#define DHTTYPE    DHT11     // DHT 11
-// #define DHTTYPE    DHT22     // DHT 22 (AM2302)
-//#define DHTTYPE    DHT21     // DHT 21 (AM2301)
-
-// DHT dht(DHTPIN, DHTTYPE);
-
-// Define variables to store DHT readings to be sent
 float Speed;
 float Direction;
 
@@ -48,19 +26,20 @@ String dataString = ""; // variable to hold input data
 int dataArray[datalen]; // array to hold parsed integers
 int dataIndex = 0; // index for dataArray
 
+const int buttonPin = D5;
+int buttonState = 0;
+int counter = 1;
 // Define variables to store incoming readings
 float FeedBackSpeed;
 float FeedBackDirection;
 
-// Updates DHT readings every 10 seconds
+
 const long interval = 100; 
-unsigned long previousMillis = 0;    // will store last time DHT was updated 
+unsigned long previousMillis = 0;    // 
 
 // Variable to store if sending data was successful
 String success;
 
-//Structure example to send data
-//Must match the receiver structure
 typedef struct struct_message {
     float speed;
     float dir;
@@ -70,53 +49,55 @@ typedef struct struct_message {
 struct_message Data_structure;
 
 // Create a struct_message to hold incoming sensor readings
-struct_message incomingReadings;
+struct_message incomingData;
 
-// Callback when data is sent
+
+void parseData();
+void printData();
+// Callback when data is sent to slave
 void OnDataSent(uint8_t *mac_addr, uint8_t sendStatus) {
   Serial.print("Last Packet Send Status: ");
   if (sendStatus == 0){
-    Serial.println("Delivery success");
+    Serial.println("sent successfully");
   }
   else{
-    Serial.println("Delivery fail");
+    Serial.println("fail to sent");
   }
 }
 
-// Callback when data is received
-void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len) {
-  memcpy(&incomingReadings, incomingData, sizeof(incomingReadings));
+// Callback when data is received from slave
+void OnDataRecv(uint8_t * mac, uint8_t *IncomingData, uint8_t len) {
+  memcpy(&incomingData, IncomingData, sizeof(incomingData));
   if (debug_mode == 1)
   {
     Serial.print("Bytes received: ");
     Serial.println(len);
   }
-  FeedBackSpeed = incomingReadings.speed;
-  FeedBackDirection = incomingReadings.dir;
+  FeedBackSpeed = incomingData.speed;
+  FeedBackDirection = incomingData.dir;
 }
 
-// ##edit this function
-void getReadings(){ // To get data from another esp
-  // Read Speed
 
-  Speed = 50; // ##replace this from speed 
+// // ##edit this function
+// void getReadings(){ // To get data from another esp
+//   // Read Speed
 
-  // Read Speed as Fahrenheit (isFahrenheit = true)
-  //float t = dht.readTemperature(true);
-  if (isnan(Speed)){
-    Serial.println("Failed to read from DHT");
-    Speed = 0.0;
-  }
+//   Speed = 50; // ##replace this from speed 
 
-  Direction = 1;  // ##replace this from direction
+//   if (isnan(Speed)){
+//     Serial.println("Failed to read");
+//     Speed = 0.0;
+//   }
 
-  if (isnan(Direction)){
-    Serial.println("Failed to read from DHT");
-    Direction = 0.0;
-  }
-}
+//   Direction = 1;  // ##replace this from direction
 
-void printIncomingReadings(){
+//   if (isnan(Direction)){
+//     Serial.println("Failed to read");
+//     Direction = 0.0;
+//   }
+// }
+
+void printincomingData(){
   // Display Readings in Serial Monitor
   Serial.println("FEEDBACK READINGS");
   Serial.print("Speed: ");
@@ -130,22 +111,17 @@ void printIncomingReadings(){
 void setup() {
   // Init Serial Monitor
   Serial.begin(115200);
-
-  // Init DHT sensor
-  // dht.begin();
-  Serial.println("I am Rec_controller : {0xA4, 0xCF, 0x12, 0xF3, 0x81, 0xEF}");
+  pinMode(buttonPin, INPUT);
+  // Serial.println("I am Rec_controller : {0xA4, 0xCF, 0x12, 0xBE, 0x6A, 0x7D}");
  
   // Set device as a Wi-Fi Station
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
-  pinMode(buttonPin, OUTPUT);
   // Init ESP-NOW
   if (esp_now_init() != 0) {
     Serial.println("Error initializing ESP-NOW");
     return;
   }
-
-
   // Set ESP-NOW Role
   esp_now_set_self_role(ESP_NOW_ROLE_COMBO);
 
@@ -178,34 +154,34 @@ void get_serial_reading()
   }
 }
 
-
-
 void loop() {
   unsigned long currentMillis = millis();
   get_serial_reading();
   if (currentMillis - previousMillis >= interval) 
     {
-      // save the last time you updated the DHT values
+      // time for last updated data
       previousMillis = currentMillis;
-
-      //Get DHT readings
-      // getReadings();
       get_serial_reading();
 
       //Set values to send
-      Data_structure.speed = dataArray[0];
+      // Data_structure.speed = dataArray[0];
       Data_structure.dir = dataArray[1];
 
-      if(dataArray[1] > 0)
+      buttonState = digitalRead(buttonPin);
+
+// condition for serial
+      if(buttonState == HIGH)
       {
-        digitalWrite(buttonPin, HIGHw);
-        delay(50);
+        Serial.println("------------------------ Button Pressed ----------------------");
+        Serial.println(counter);
+        counter = counter + 1;
+        Data_structure.speed = counter;
+        delay(500);
       }
-      else
-      {
-        digitalWrite(buttonPin, LOW);
-        delay(50);
-      }
+      // else
+      // {
+      //    dataArray[0] = 0;
+      // }
 
       // Send message via ESP-NOW
       esp_now_send(broadcastAddress, (uint8_t *) &Data_structure, sizeof(Data_structure));
@@ -215,15 +191,14 @@ void loop() {
       {
         Serial.println("------------------------ Debug Mode ----------------------");
         Serial.println("------------------------ FeedBack Data ----------------------");
-        printIncomingReadings();
-        Serial.println("------------------------ Paresed Data ----------------------");
+        printincomingData();
+        Serial.println("------------------------ Parsed Data ----------------------");
         printData();
         Serial.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
       }
     }
 
 }
-
 
   //////////////////////////////////////////////////////////////////////
 

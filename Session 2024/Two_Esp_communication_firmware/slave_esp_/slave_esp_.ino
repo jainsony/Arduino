@@ -1,48 +1,29 @@
 // uint8_t broadcastAddress[] = {0xA4, 0xCF, 0x12, 0xBE, 0x6A, 0x7D};  brodd bro
-/*
-  Rui Santos
-  Complete project details at https://RandomNerdTutorials.com/esp-now-two-way-communication-esp8266-nodemcu/
-  
-  Permission is hereby granted, free of charge, to any person obtaining a copy
-  of this software and associated documentation files.
-  
-  The above copyright notice and this permission notice shall be included in all
-  copies or substantial portions of the Software.
-*/
-
+// a4:cf:12:be:6a:7d
 #include <ESP8266WiFi.h>
 #include <espnow.h>
 
-#include <Adafruit_Sensor.h>
-#include <DHT.h>
+// MAC Address of your master 
+uint8_t broadcastAddress[] = {0xA4, 0xCF, 0x12, 0xBE, 0x6A, 0x7D};
 
-// REPLACE WITH THE MAC Address of your receiver 
-uint8_t broadcastAddress[] = {0x8C, 0xAA, 0xB5, 0x52, 0xA2, 0xFB};
+uint8_t debug_mode = 0;
 
-uint8_t debug_mode = 1;
-// Digital pin connected to the DHT sensor
-#define speed_pin 5    // D1
-#define dir_pin 4      // D2
-
+#define speed_pin 11    // D1
+#define dir_pin 10     // D2
 
 #define datalen 4
-#define threshold 5
+
+#define threshold 50
 
 int i = 0;
 
 int a_speed = 0;
 int b_speed = 0;
 
-// Uncomment the type of sensor in use:
-//#define DHTTYPE    DHT11     // DHT 11
-// #define DHTTYPE    DHT22     // DHT 22 (AM2302)
-//#define DHTTYPE    DHT21     // DHT 21 (AM2301)
+int ledPin = 0;
 
-// DHT dht(DHTPIN, DHTTYPE);
-
-// Define variables to store DHT readings to be sent
-float Speed;
-float Direction;
+int Speed = 1;
+int Direction;
 
 // Define variables to store incoming readings
 float incomingSpeed;
@@ -52,9 +33,8 @@ String dataString = ""; // variable to hold input data
 int dataArray[datalen]; // array to hold parsed integers
 int dataIndex = 0; // index for dataArray
 
-// Updates DHT readings every 10 seconds
 const long interval = 100; 
-unsigned long previousMillis = 0;    // will store last time DHT was updated 
+unsigned long previousMillis = 0;    
 
 // Variable to store if sending data was successful
 String success;
@@ -101,10 +81,9 @@ void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len) {
 
 // ##edit this function
 void getReadings(){
-  // reciving data
-  Speed = incomingSpeed; // ##replace this from speed 
-  // Read Speed as Fahrenheit (isFahrenheit = true)
-  //float t = dht.readTemperature(true);
+  // receving data
+  Speed = incomingSpeed; // 
+
   if (isnan(Speed)){
     Serial.println("Failed to read");
     Speed = 0.0;
@@ -131,15 +110,14 @@ void printIncomingReadings(){
 void setup() {
   // Init Serial Monitor
   Serial.begin(115200);
-
-  // Init DHT sensor
-  // dht.begin();
  
+  pinMode(ledPin, OUTPUT);
+
   // Set device as a Wi-Fi Station
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
   
-  Serial.println("{0xA4, 0xCF, 0x12, 0xF3, 0x84, 0x5D}");
+  // Serial.println("{0xA4, 0xCF, 0x12, 0xF3, 0x84, 0x5D}");
   // Init ESP-NOW
   if (esp_now_init() != 0) {
     Serial.println("Error initializing ESP-NOW");
@@ -163,15 +141,27 @@ void setup() {
 void loop() {
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= interval) {
-    // save the last time you updated the DHT values
+
     previousMillis = currentMillis;
 
-    //Get DHT readings
     getReadings();
 
     //Set values to send
     Data_structure.speed = Speed;
     Data_structure.dir = Direction;
+
+    if(Speed%2 != 0) {
+      // turn LED on:
+      Serial.println("------------------------ Signal Rec Led ON----------------------");
+      Serial.println(Speed);
+      digitalWrite(ledPin, HIGH);
+    } else {
+      // turn LED off:
+      Serial.println("------------------------ Signal Rec Led OFF----------------------");
+      Serial.println(Speed);
+      digitalWrite(ledPin, LOW);
+    }
+
 
     // Send message via ESP-NOW
     esp_now_send(broadcastAddress, (uint8_t *) &Data_structure, sizeof(Data_structure));
@@ -190,13 +180,13 @@ void loop() {
 
 //////////////////////////////////////////////
 
-// work on "Speed" and Direction "vaiable"
+// work on "Speed" and Direction "variable"
 void control()
 {
   // Serial.print("in control function Speed = ");
   // Serial.println(Speed);
-  Serial.print("in control function direction = ");
-  Serial.println(Direction);
+  // Serial.print("in control function direction = ");
+  // Serial.println(Direction);
 
   if(Speed > threshold)
   {

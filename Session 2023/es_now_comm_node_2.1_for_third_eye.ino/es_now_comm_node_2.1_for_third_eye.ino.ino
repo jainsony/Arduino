@@ -13,14 +13,13 @@
 #include <ESP8266WiFi.h>
 #include <espnow.h>
 
-#include <Adafruit_Sensor.h>
-#include <DHT.h>
 
 // REPLACE WITH THE MAC Address of your receiver 
-uint8_t broadcastAddress[] = {0xA4, 0xCF, 0x12, 0xF3, 0x84, 0x5D};
+// uint8_t broadcastAddress[] = {0xEC, 0xFA, 0xBC, 0xC1, 0xE6, 0xEA};
+uint8_t broadcastAddress[] = {0xA4, 0xCF, 0x12, 0xBE, 0x6A, 0x7D};
 
 uint8_t debug_mode = 1;
-// Digital pin connected to the DHT sensor
+
 #define PWM1 5    // D1  these are working
 #define DIR1 4      // D2
 
@@ -35,12 +34,6 @@ int i = 0;
 int a_speed = 0;
 int b_speed = 0;
 
-// Uncomment the type of sensor in use:
-//#define DHTTYPE    DHT11     // DHT 11
-// #define DHTTYPE    DHT22     // DHT 22 (AM2302)
-//#define DHTTYPE    DHT21     // DHT 21 (AM2301)
-
-// DHT dht(DHTPIN, DHTTYPE);
 
 // Define variables to store DHT readings to be sent
 float Speed;
@@ -54,24 +47,18 @@ String dataString = ""; // variable to hold input data
 int dataArray[datalen]; // array to hold parsed integers
 int dataIndex = 0; // index for dataArray
 
-// Updates DHT readings every 10 seconds
 const long interval = 100; 
 unsigned long previousMillis = 0;    // will store last time DHT was updated 
 
-// Variable to store if sending data was successful
 String success;
 
-//Structure example to send data
-//Must match the receiver structure
 typedef struct struct_message {
     float speed;
     float dir;
 } struct_message;
 
-// Create a struct_message called Data_structure to hold sensor readings
 struct_message Data_structure;
 
-// Create a struct_message to hold incoming sensor readings
 struct_message incomingReadings;
 
 // Callback when data is sent

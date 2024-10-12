@@ -16,7 +16,7 @@
 #include <espnow.h>
 
 // REPLACE WITH THE MAC Address of your receiver 
-uint8_t broadcastAddress[] = {0xA4, 0xCF, 0x12, 0xF3, 0x84, 0x5D};
+uint8_t broadcastAddress[] = {0xA4, 0xCF, 0x12, 0xD9, 0x24, 0xDE};
 
 uint8_t debug_mode = 1;
 // Digital pin connected to the DHT sensor

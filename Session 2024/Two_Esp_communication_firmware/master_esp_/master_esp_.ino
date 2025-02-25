@@ -8,7 +8,7 @@
 #include <espnow.h>
 
 // MAC Address of your salve 
-uint8_t broadcastAddress[] = {0x5C, 0xCF, 0x7F, 0x49, 0xC6, 0x50};
+uint8_t broadcastAddress[] = {0x3C, 0x61, 0x05, 0xDD, 0xE3, 0xA2};
 uint8_t debug_mode = 0;
 
 #define datalen 4
@@ -170,14 +170,14 @@ void loop() {
       buttonState = digitalRead(buttonPin);
 
 // condition for serial
-      if(buttonState == HIGH)
-      {
-        Serial.println("------------------------ Button Pressed ----------------------");
-        Serial.println(counter);
-        counter = counter + 1;
-        Data_structure.speed = counter;
-        delay(500);
-      }
+      // if(buttonState == HIGH)
+      // {
+      //   Serial.println("------------------------ Button Pressed ----------------------");
+      //   Serial.println(counter);
+      //   counter = counter + 1;
+      //   Data_structure.speed = counter;
+      //   delay(500);
+      // }
       // else
       // {
       //    dataArray[0] = 0;

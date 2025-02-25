@@ -4,9 +4,9 @@
 #include <espnow.h>
 
 // MAC Address of your master 
-uint8_t broadcastAddress[] = {0xA4, 0xCF, 0x12, 0xBE, 0x6A, 0x7D};
+uint8_t broadcastAddress[] = {0x3C, 0x61, 0x05, 0xD5, 0xD4, 0xC1};
 
-uint8_t debug_mode = 0;
+uint8_t debug_mode = 1;
 
 #define speed_pin 11    // D1
 #define dir_pin 10     // D2
@@ -150,29 +150,29 @@ void loop() {
     Data_structure.speed = Speed;
     Data_structure.dir = Direction;
 
-    if(Speed%2 != 0) {
-      // turn LED on:
-      Serial.println("------------------------ Signal Rec Led ON----------------------");
-      Serial.println(Speed);
-      digitalWrite(ledPin, HIGH);
-    } else {
-      // turn LED off:
-      Serial.println("------------------------ Signal Rec Led OFF----------------------");
-      Serial.println(Speed);
-      digitalWrite(ledPin, LOW);
-    }
+    // if(Speed%2 != 0) {
+    //   // turn LED on:
+    //   Serial.println("------------------------ Signal Rec Led ON----------------------");
+    //   Serial.println(Speed);
+    //   digitalWrite(ledPin, HIGH);
+    // } else {
+    //   // turn LED off:
+    //   Serial.println("------------------------ Signal Rec Led OFF----------------------");
+    //   Serial.println(Speed);
+    //   digitalWrite(ledPin, LOW);
+    // }
 
 
     // Send message via ESP-NOW
     esp_now_send(broadcastAddress, (uint8_t *) &Data_structure, sizeof(Data_structure));
 
     // Print incoming readings
-          if(debug_mode == 1)
+      if(debug_mode == 1)
       {
         Serial.println("------------------------ Debug Mode ----------------------");
         Serial.println("------------------------ Incoming Data ----------------------");
         printIncomingReadings();
-        control();
+        // control();
         Serial.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
       }
   }

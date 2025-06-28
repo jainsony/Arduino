@@ -1,9 +1,7 @@
-// uint8_t broadcastAddress[] = {0xA4, 0xCF, 0x12, 0xBE, 0x6A, 0x7D};  brodd bro
-// a4:cf:12:be:6a:7d
 #include <ESP8266WiFi.h>
 #include <espnow.h>
 
-// MAC Address of your master 
+// MAC Address of your transmitter board
 uint8_t broadcastAddress[] = {0x3C, 0x61, 0x05, 0xD5, 0xD4, 0xC1};
 
 uint8_t debug_mode = 1;
@@ -117,7 +115,7 @@ void setup() {
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
   
-  // Serial.println("{0xA4, 0xCF, 0x12, 0xF3, 0x84, 0x5D}");
+  // Serial.println("I am Reciver:{0xA4, 0xCF, 0x12, 0xF3, 0x84, 0x5D}");
   // Init ESP-NOW
   if (esp_now_init() != 0) {
     Serial.println("Error initializing ESP-NOW");
@@ -149,19 +147,6 @@ void loop() {
     //Set values to send
     Data_structure.speed = Speed;
     Data_structure.dir = Direction;
-
-    // if(Speed%2 != 0) {
-    //   // turn LED on:
-    //   Serial.println("------------------------ Signal Rec Led ON----------------------");
-    //   Serial.println(Speed);
-    //   digitalWrite(ledPin, HIGH);
-    // } else {
-    //   // turn LED off:
-    //   Serial.println("------------------------ Signal Rec Led OFF----------------------");
-    //   Serial.println(Speed);
-    //   digitalWrite(ledPin, LOW);
-    // }
-
 
     // Send message via ESP-NOW
     esp_now_send(broadcastAddress, (uint8_t *) &Data_structure, sizeof(Data_structure));
